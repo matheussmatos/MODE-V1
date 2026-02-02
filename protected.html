@@ -442,260 +442,64 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="auth.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, push, onValue, set, onDisconnect, serverTimestamp, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-        // ========================================
-        // CONFIGURAÇÃO DO FIREBASE
-        // ========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyA3p1xzpXLPOJyn8YUUvNWj8un11H6xXc4",
-            authDomain: "mode-sketch.firebaseapp.com",
-            databaseURL: "https://mode-sketch-default-rtdb.firebaseio.com",
-            projectId: "mode-sketch",
-            storageBucket: "mode-sketch.firebasestorage.app",
-            messagingSenderId: "713181837286",
-            appId: "1:713181837286:web:c1d1afddbef64219e94827"
-        };
-
-        // Inicializa Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // ========================================
-        // SISTEMA DE CHAT COM FIREBASE REALTIME
-        // ========================================
-        class ChatSystem {
-            constructor() {
-                this.messagesContainer = document.getElementById('chatMessages');
-                this.input = document.getElementById('chatInput');
-                this.sendBtn = document.getElementById('sendBtn');
-                this.onlineCountEl = document.getElementById('onlineCount');
-                this.statusEl = document.getElementById('chatStatus');
+    <script>
+        // Aguarda Auth estar disponível
+        function waitForAuth(callback, maxAttempts = 15) {
+            let attempts = 0;
+            
+            function checkAuth() {
+                attempts++;
                 
-                this.messagesRef = ref(database, 'chat/messages');
-                this.presenceRef = ref(database, 'chat/presence');
-                this.currentUser = Auth.getCurrentUser();
-                this.userPresenceRef = null;
-                this.isConnected = false;
-                
-                this.init();
-            }
-
-            init() {
-                if (!this.currentUser) {
-                    console.error('Usuário não autenticado');
-                    this.statusEl.textContent = 'Erro: Não autenticado';
-                    this.statusEl.classList.add('status-disconnected');
-                    return;
-                }
-
-                this.setupPresence();
-                this.loadMessages();
-                this.setupEventListeners();
-                this.setupConnectionStatus();
-            }
-
-            setupConnectionStatus() {
-                const connectedRef = ref(database, '.info/connected');
-                onValue(connectedRef, (snapshot) => {
-                    this.isConnected = snapshot.val() === true;
-                    
-                    if (this.isConnected) {
-                        this.statusEl.textContent = 'Conectado';
-                        this.statusEl.classList.remove('status-disconnected');
-                        this.statusEl.classList.add('status-connected');
-                        this.sendBtn.disabled = false;
-                    } else {
-                        this.statusEl.textContent = 'Desconectado';
-                        this.statusEl.classList.remove('status-connected');
-                        this.statusEl.classList.add('status-disconnected');
-                        this.sendBtn.disabled = true;
-                    }
-                });
-            }
-
-            setupPresence() {
-                const presenceId = `${this.currentUser.username}_${Date.now()}`;
-                this.userPresenceRef = ref(database, `chat/presence/${presenceId}`);
-                
-                const presenceData = {
-                    username: this.currentUser.username,
-                    isAdmin: this.currentUser.isAdmin,
-                    online: true,
-                    lastSeen: serverTimestamp(),
-                    connectedAt: serverTimestamp()
-                };
-
-                set(this.userPresenceRef, presenceData);
-                onDisconnect(this.userPresenceRef).remove();
-
-                onValue(this.presenceRef, (snapshot) => {
-                    const presence = snapshot.val();
-                    if (presence) {
-                        const uniqueUsers = new Set();
-                        Object.values(presence).forEach(user => {
-                            if (user.online) {
-                                uniqueUsers.add(user.username);
-                            }
-                        });
-                        this.onlineCountEl.textContent = uniqueUsers.size;
-                    } else {
-                        this.onlineCountEl.textContent = 0;
-                    }
-                });
-
-                this.presenceInterval = setInterval(() => {
-                    if (this.isConnected) {
-                        set(this.userPresenceRef, presenceData);
-                    }
-                }, 30000);
-            }
-
-            setupEventListeners() {
-                this.sendBtn.addEventListener('click', () => this.sendMessage());
-                
-                this.input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
-                });
-
-                this.input.addEventListener('input', () => {
-                    this.input.style.height = 'auto';
-                    this.input.style.height = Math.min(this.input.scrollHeight, 100) + 'px';
-                });
-            }
-
-            sendMessage() {
-                const text = this.input.value.trim();
-                if (!text || !this.isConnected) return;
-
-                const message = {
-                    username: this.currentUser.username,
-                    isAdmin: this.currentUser.isAdmin,
-                    text: text,
-                    timestamp: serverTimestamp()
-                };
-
-                this.sendBtn.disabled = true;
-
-                push(this.messagesRef, message)
-                    .then(() => {
-                        this.input.value = '';
-                        this.input.style.height = 'auto';
-                        this.sendBtn.disabled = false;
-                        this.input.focus();
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao enviar mensagem:', error);
-                        alert('Erro ao enviar mensagem. Tente novamente.');
-                        this.sendBtn.disabled = false;
-                    });
-            }
-
-            loadMessages() {
-                const messagesQuery = query(
-                    this.messagesRef,
-                    orderByChild('timestamp'),
-                    limitToLast(100)
-                );
-
-                onValue(messagesQuery, (snapshot) => {
-                    const messages = [];
-                    snapshot.forEach((childSnapshot) => {
-                        const msg = childSnapshot.val();
-                        if (msg.timestamp) {
-                            messages.push(msg);
-                        }
-                    });
-
-                    this.renderMessages(messages);
-                }, (error) => {
-                    console.error('Erro ao carregar mensagens:', error);
-                    this.messagesContainer.innerHTML = `
-                        <div class="empty-chat" style="color: #ff4444;">
-                            Erro ao carregar mensagens. Verifique sua conexão.
-                        </div>
-                    `;
-                });
-            }
-
-            renderMessages(messages) {
-                if (messages.length === 0) {
-                    this.messagesContainer.innerHTML = `
-                        <div class="empty-chat">
-                            💬 Nenhuma mensagem ainda. Seja o primeiro a enviar!
-                        </div>
-                    `;
-                    return;
-                }
-
-                const shouldScroll = this.messagesContainer.scrollHeight - this.messagesContainer.scrollTop <= this.messagesContainer.clientHeight + 100;
-
-                this.messagesContainer.innerHTML = messages.map(msg => {
-                    const date = new Date(msg.timestamp);
-                    const time = date.toLocaleTimeString('pt-BR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    });
-                    
-                    const initial = msg.username.charAt(0).toUpperCase();
-                    
-                    return `
-                        <div class="chat-message">
-                            <div class="message-avatar">${initial}</div>
-                            <div class="message-content">
-                                <div class="message-header">
-                                    <span class="message-username">${this.escapeHtml(msg.username)}</span>
-                                    ${msg.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
-                                    <span class="message-time">${time}</span>
-                                </div>
-                                <div class="message-text">${this.escapeHtml(msg.text)}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                if (shouldScroll) {
-                    setTimeout(() => {
-                        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-                    }, 100);
+                if (typeof window.Auth !== 'undefined' && window.Auth !== null && window.Auth.initialized) {
+                    callback();
+                } else if (attempts < maxAttempts) {
+                    setTimeout(checkAuth, 300);
+                } else {
+                    console.error('Auth não foi inicializado');
+                    window.location.href = 'login.html';
                 }
             }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+            
+            checkAuth();
+        }
+        
+        waitForAuth(async function() {
+            const Auth = window.Auth;
+            
+            // Protege a página
+            try {
+                await Auth.requireAuth();
+                initProtected();
+            } catch (error) {
+                console.error('Erro ao verificar autenticação:', error);
+                window.location.href = 'login.html';
             }
+        });
 
-            destroy() {
-                if (this.presenceInterval) {
-                    clearInterval(this.presenceInterval);
-                }
-                if (this.userPresenceRef) {
-                    remove(this.userPresenceRef);
-                }
-            }
+        let chatUnsubscribe = null;
+
+        function initProtected() {
+            const Auth = window.Auth;
+            updateUserInfo();
+            initChat();
         }
 
-        // ========================================
-        // INICIALIZAÇÃO
-        // ========================================
-        
-        Auth.requireAuth();
-
+        // Atualiza informações do usuário
         function updateUserInfo() {
+            const Auth = window.Auth;
             const user = Auth.getCurrentUser();
             const userInfoBox = document.getElementById('userInfoBox');
             const adminLink = document.getElementById('adminLink');
+
+            if (!user || !userInfoBox) return;
 
             const loginDate = new Date(user.loginTime);
             const formattedDate = loginDate.toLocaleString('pt-BR');
@@ -712,20 +516,130 @@
                 </div>
             `;
 
-            if (user.isAdmin) {
+            // Mostra link do admin se for admin
+            if (user.isAdmin && adminLink) {
                 adminLink.style.display = 'inline-block';
             }
         }
 
-        updateUserInfo();
-        const chat = new ChatSystem();
+        // Inicializa chat
+        function initChat() {
+            const Auth = window.Auth;
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendBtn');
+            const currentUser = Auth.getCurrentUser();
 
+            if (!chatMessages || !chatInput || !sendButton || !currentUser) return;
+
+            // Limpa loading
+            chatMessages.innerHTML = '';
+
+            // Listener para novas mensagens em tempo real
+            chatUnsubscribe = window.firebaseDb.collection('chat')
+                .orderBy('timestamp', 'asc')
+                .limitToLast(100)
+                .onSnapshot((snapshot) => {
+                    chatMessages.innerHTML = '';
+
+                    if (snapshot.empty) {
+                        chatMessages.innerHTML = '<div class="chat-empty">Nenhuma mensagem ainda. Seja o primeiro a escrever!</div>';
+                        return;
+                    }
+
+                    snapshot.docs.forEach(doc => {
+                        const message = doc.data();
+                        const messageElement = createMessageElement(message, currentUser.username);
+                        chatMessages.appendChild(messageElement);
+                    });
+
+                    // Scroll para o final
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, (error) => {
+                    console.error('Erro ao carregar mensagens:', error);
+                    chatMessages.innerHTML = '<div class="chat-empty">Erro ao carregar mensagens</div>';
+                });
+
+            // Enviar mensagem
+            function sendMessage() {
+                const text = chatInput.value.trim();
+                
+                if (!text) return;
+
+                sendButton.disabled = true;
+                sendButton.textContent = 'Enviando...';
+
+                window.firebaseDb.collection('chat').add({
+                    username: currentUser.username,
+                    text: text,
+                    timestamp: window.firebaseApp.firestore.FieldValue.serverTimestamp(),
+                    userId: currentUser.username
+                })
+                .then(() => {
+                    chatInput.value = '';
+                    sendButton.disabled = false;
+                    sendButton.textContent = 'Enviar';
+                })
+                .catch((error) => {
+                    console.error('Erro ao enviar mensagem:', error);
+                    alert('Erro ao enviar mensagem. Tente novamente.');
+                    sendButton.disabled = false;
+                    sendButton.textContent = 'Enviar';
+                });
+            }
+
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Cria elemento de mensagem
+        function createMessageElement(message, currentUsername) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            
+            if (message.username === currentUsername) {
+                messageDiv.classList.add('own');
+            }
+
+            const timestamp = message.timestamp 
+                ? (message.timestamp.toDate ? message.timestamp.toDate() : new Date(message.timestamp))
+                : new Date();
+
+            const formattedTime = timestamp.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            messageDiv.innerHTML = `
+                <div class="chat-message-header">
+                    <span class="chat-username">${escapeHtml(message.username)}</span>
+                    <span class="chat-timestamp">${formattedTime}</span>
+                </div>
+                <div class="chat-text">${escapeHtml(message.text)}</div>
+            `;
+
+            return messageDiv;
+        }
+
+        // Escapa HTML para prevenir XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Limpa listener ao sair da página
         window.addEventListener('beforeunload', () => {
-            chat.destroy();
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+            }
         });
-
-        console.log('🔥 Firebase Chat inicializado');
-        console.log('👤 Usuário:', chat.currentUser.username);
     </script>
 </body>
 </html>

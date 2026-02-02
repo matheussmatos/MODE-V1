@@ -183,7 +183,7 @@
     <div class="login-container">
         <div class="login-box">
             <div class="login-logo">MODE</div>
-            <div class="login-subtitle">Área restrista</div>
+            <div class="login-subtitle">Área restrita</div>
             
             <form class="login-form" id="loginForm">
                 <input 
@@ -215,45 +215,107 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="auth.js"></script>
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const errorMessage = document.getElementById('errorMessage');
-        const loginButton = document.getElementById('loginButton');
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Aguarda Auth estar disponível
+        function waitForAuth(callback, maxAttempts = 15) {
+            let attempts = 0;
             
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
-
-            errorMessage.classList.remove('show');
-            loginButton.disabled = true;
-            loginButton.textContent = 'Verificando...';
-
-            // Simula delay de rede
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            if (Auth.login(username, password)) {
-                loginButton.textContent = 'Sucesso!';
+            function checkAuth() {
+                attempts++;
                 
-                // Verifica se é admin
-                if (Auth.isAdmin()) {
-                    window.location.href = 'admin.html';
+                if (typeof window.Auth !== 'undefined' && window.Auth !== null && window.Auth.initialized) {
+                    callback();
+                } else if (attempts < maxAttempts) {
+                    setTimeout(checkAuth, 300);
                 } else {
-                    window.location.href = 'protected.html';
+                    console.error('Auth não foi inicializado após várias tentativas');
+                    const errorMsg = document.getElementById('errorMessage');
+                    if (errorMsg) {
+                        errorMsg.textContent = 'Erro ao carregar sistema. Recarregue a página.';
+                        errorMsg.classList.add('show');
+                    }
                 }
-            } else {
-                errorMessage.classList.add('show');
-                loginButton.disabled = false;
-                loginButton.textContent = 'Entrar';
-                passwordInput.value = '';
-                passwordInput.focus();
             }
+            
+            checkAuth();
+        }
+        
+        waitForAuth(function() {
+            const Auth = window.Auth;
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('errorMessage');
+            const loginButton = document.getElementById('loginButton');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+
+                if (!username || !password) {
+                    errorMessage.textContent = 'Preencha todos os campos';
+                    errorMessage.classList.add('show');
+                    return;
+                }
+
+                errorMessage.classList.remove('show');
+                loginButton.disabled = true;
+                loginButton.textContent = 'Verificando...';
+
+                try {
+                    const success = await Auth.login(username, password);
+                    
+                    if (success) {
+                        loginButton.textContent = 'Sucesso!';
+                        
+                        // Verifica se é admin
+                        const isAdmin = await Auth.isAdmin();
+                        
+                        setTimeout(() => {
+                            if (isAdmin) {
+                                window.location.href = 'admin.html';
+                            } else {
+                                window.location.href = 'protected.html';
+                            }
+                        }, 500);
+                    } else {
+                        errorMessage.textContent = 'Usuário ou senha incorretos';
+                        errorMessage.classList.add('show');
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Entrar';
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    }
+                } catch (error) {
+                    console.error('Erro no login:', error);
+                    errorMessage.textContent = error.message || 'Erro ao fazer login';
+                    errorMessage.classList.add('show');
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Entrar';
+                    passwordInput.value = '';
+                }
+            });
+
+            // Remove mensagem de erro ao digitar
+            usernameInput.addEventListener('input', () => {
+                errorMessage.classList.remove('show');
+            });
+
+            passwordInput.addEventListener('input', () => {
+                errorMessage.classList.remove('show');
+            });
         });
+    </script>
 
         // Remove mensagem de erro ao digitar
         usernameInput.addEventListener('input', () => {

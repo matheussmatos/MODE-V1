@@ -409,135 +409,207 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="auth.js"></script>
     <script>
-        // Protege a página - apenas admin
-        Auth.requireAdmin();
-
-        // Atualiza informações do usuário
-        function updateUserInfo() {
-            const user = Auth.getCurrentUser();
-            document.getElementById('userInfo').textContent = 
-                `Logado como: ${user.username} • Admin`;
+        // Aguarda Auth estar disponível
+        function waitForAuth(callback, maxAttempts = 15) {
+            let attempts = 0;
+            
+            function checkAuth() {
+                attempts++;
+                
+                if (typeof window.Auth !== 'undefined' && window.Auth !== null && window.Auth.initialized) {
+                    callback();
+                } else if (attempts < maxAttempts) {
+                    setTimeout(checkAuth, 300);
+                } else {
+                    console.error('Auth não foi inicializado');
+                    alert('Erro ao carregar sistema. Recarregue a página.');
+                    window.location.href = 'login.html';
+                }
+            }
+            
+            checkAuth();
         }
+        
+        waitForAuth(async function() {
+            const Auth = window.Auth;
+            
+            // Protege a página - apenas admin
+            try {
+                await Auth.requireAdmin();
+                initAdmin();
+            } catch (error) {
+                console.error('Erro ao verificar admin:', error);
+                window.location.href = 'login.html';
+            }
+        });
+        
+        function initAdmin() {
+            const Auth = window.Auth;
 
-        // Carrega lista de usuários
-        function loadUsers() {
-            const users = Auth.listUsers();
-            const container = document.getElementById('usersTableContainer');
-            const currentUser = Auth.getCurrentUser();
-
-            if (users.length === 0) {
-                container.innerHTML = '<div class="empty-state">Nenhum usuário cadastrado</div>';
-                return;
+            // Atualiza informações do usuário
+            function updateUserInfo() {
+                const user = Auth.getCurrentUser();
+                if (user) {
+                    document.getElementById('userInfo').textContent = 
+                        `Logado como: ${user.username} • Admin`;
+                }
             }
 
-            let tableHTML = `
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>Usuário</th>
-                            <th>Tipo</th>
-                            <th>Criado em</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            // Carrega lista de usuários
+            async function loadUsers() {
+                try {
+                    const users = await Auth.listUsers();
+                    const container = document.getElementById('usersTableContainer');
+                    const currentUser = Auth.getCurrentUser();
 
-            users.forEach(user => {
-                const date = new Date(user.createdAt);
-                const formattedDate = date.toLocaleDateString('pt-BR');
-                const isCurrentUser = user.username === currentUser.username;
+                    if (users.length === 0) {
+                        container.innerHTML = '<div class="empty-state">Nenhum usuário cadastrado</div>';
+                        return;
+                    }
 
-                tableHTML += `
-                    <tr>
-                        <td>${user.username}</td>
-                        <td>
-                            ${user.isAdmin ? '<span class="badge admin">Admin</span>' : '<span class="badge">Usuário</span>'}
-                        </td>
-                        <td>${formattedDate}</td>
-                        <td>
-                            ${!isCurrentUser ? 
-                                `<button class="delete-btn" onclick="deleteUser('${user.username}')">Deletar</button>` : 
-                                '<span style="color: rgba(255,255,255,0.3); font-size: 10px;">Você</span>'}
-                        </td>
-                    </tr>
-                `;
+                    let tableHTML = `
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>Tipo</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    users.forEach(user => {
+                        const date = user.createdAt instanceof Date ? user.createdAt : new Date(user.createdAt);
+                        const formattedDate = date.toLocaleDateString('pt-BR');
+                        const isCurrentUser = currentUser && user.username === currentUser.username;
+
+                        tableHTML += `
+                            <tr>
+                                <td>${user.username}</td>
+                                <td>
+                                    ${user.isAdmin ? '<span class="badge admin">Admin</span>' : '<span class="badge">Usuário</span>'}
+                                </td>
+                                <td>${formattedDate}</td>
+                                <td>
+                                    ${!isCurrentUser ? 
+                                        `<button class="delete-btn" onclick="deleteUser('${user.username}')">Deletar</button>` : 
+                                        '<span style="color: rgba(255,255,255,0.3); font-size: 10px;">Você</span>'}
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    tableHTML += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    container.innerHTML = tableHTML;
+                } catch (error) {
+                    console.error('Erro ao carregar usuários:', error);
+                    document.getElementById('usersTableContainer').innerHTML = 
+                        '<div class="empty-state">Erro ao carregar usuários</div>';
+                }
+            }
+
+            // Mostra mensagem
+            function showMessage(elementId, type, text) {
+                const element = document.getElementById(elementId);
+                element.className = `message ${type} show`;
+                element.textContent = text;
+
+                setTimeout(() => {
+                    element.classList.remove('show');
+                }, 5000);
+            }
+
+            // Criar usuário
+            document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = document.getElementById('newUsername').value.trim();
+                const password = document.getElementById('newPassword').value;
+                const isAdmin = document.getElementById('isAdmin').checked;
+
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Criando...';
+
+                try {
+                    const result = await Auth.createUser(username, password, isAdmin);
+                    
+                    if (result && result.requiresReauth) {
+                        showMessage('createMessage', 'success', `Usuário "${username}" criado! Faça login novamente.`);
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        showMessage('createMessage', 'success', `Usuário "${username}" criado com sucesso!`);
+                        document.getElementById('createUserForm').reset();
+                        await loadUsers();
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Criar Usuário';
+                    }
+                } catch (error) {
+                    showMessage('createMessage', 'error', error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Criar Usuário';
+                }
             });
 
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
+            // Alterar senha
+            document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            container.innerHTML = tableHTML;
+                const username = document.getElementById('changeUsername').value.trim();
+                const newPassword = document.getElementById('changeNewPassword').value;
+
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Alterando...';
+
+                try {
+                    await Auth.changePassword(username, newPassword);
+                    showMessage('passwordMessage', 'success', `Senha de "${username}" alterada com sucesso!`);
+                    document.getElementById('changePasswordForm').reset();
+                } catch (error) {
+                    showMessage('passwordMessage', 'error', error.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Alterar Senha';
+                }
+            });
+
+            // Deletar usuário
+            window.deleteUser = async function(username) {
+                if (!confirm(`Tem certeza que deseja deletar o usuário "${username}"?`)) {
+                    return;
+                }
+
+                try {
+                    await Auth.deleteUser(username);
+                    showMessage('deleteMessage', 'success', `Usuário "${username}" deletado com sucesso!`);
+                    await loadUsers();
+                } catch (error) {
+                    showMessage('deleteMessage', 'error', error.message);
+                }
+            };
+
+            // Inicializa
+            updateUserInfo();
+            loadUsers();
         }
-
-        // Mostra mensagem
-        function showMessage(elementId, type, text) {
-            const element = document.getElementById(elementId);
-            element.className = `message ${type} show`;
-            element.textContent = text;
-
-            setTimeout(() => {
-                element.classList.remove('show');
-            }, 5000);
-        }
-
-        // Criar usuário
-        document.getElementById('createUserForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newPassword').value;
-            const isAdmin = document.getElementById('isAdmin').checked;
-
-            try {
-                Auth.createUser(username, password, isAdmin);
-                showMessage('createMessage', 'success', `Usuário "${username}" criado com sucesso!`);
-                document.getElementById('createUserForm').reset();
-                loadUsers();
-            } catch (error) {
-                showMessage('createMessage', 'error', error.message);
-            }
-        });
-
-        // Alterar senha
-        document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const username = document.getElementById('changeUsername').value.trim();
-            const newPassword = document.getElementById('changeNewPassword').value;
-
-            try {
-                Auth.changePassword(username, newPassword);
-                showMessage('passwordMessage', 'success', `Senha de "${username}" alterada com sucesso!`);
-                document.getElementById('changePasswordForm').reset();
-            } catch (error) {
-                showMessage('passwordMessage', 'error', error.message);
-            }
-        });
-
-        // Deletar usuário
-        function deleteUser(username) {
-            if (!confirm(`Tem certeza que deseja deletar o usuário "${username}"?`)) {
-                return;
-            }
-
-            try {
-                Auth.deleteUser(username);
-                showMessage('deleteMessage', 'success', `Usuário "${username}" deletado com sucesso!`);
-                loadUsers();
-            } catch (error) {
-                showMessage('deleteMessage', 'error', error.message);
-            }
-        }
-
-        // Inicializa
-        updateUserInfo();
-        loadUsers();
     </script>
 </body>
 </html> 
