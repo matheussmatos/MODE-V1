@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mode Sketch</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/x-icon" href="img/home-mode.png">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 60px 50px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-logo {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 64px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 18px 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Abril Fatface', serif;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .login-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 18px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-family: 'Abril Fatface', serif;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .login-button:hover::before {
+            left: 0;
+        }
+
+        .login-button:hover {
+            color: #000;
+        }
+
+        .login-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: -10px;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .back-link {
+            margin-top: 30px;
+            display: inline-block;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .login-box {
+                padding: 40px 30px;
+            }
+
+            .login-logo {
+                font-size: 48px;
+            }
+
+            .login-input {
+                padding: 16px 18px;
+                font-size: 14px;
+            }
+
+            .login-button {
+                padding: 16px;
+                font-size: 12px;
+                letter-spacing: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particulas -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Background Effects -->
+    <div class="scanline"></div>
+    <div class="red-glow"></div>
+    <div class="mouse-gradient" id="mouseGradient"></div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-logo">MODE</div>
+            <div class="login-subtitle">Área restrista</div>
+            
+            <form class="login-form" id="loginForm">
+                <input 
+                    type="text" 
+                    id="username" 
+                    class="login-input" 
+                    placeholder="Usuário" 
+                    required
+                    autocomplete="username">
+                
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="login-input" 
+                    placeholder="Senha" 
+                    required
+                    autocomplete="current-password">
+                
+                <div class="error-message" id="errorMessage">
+                    Usuário ou senha incorretos
+                </div>
+                
+                <button type="submit" class="login-button" id="loginButton">
+                    Entrar
+                </button>
+            </form>
+
+            <a href="index.html" class="back-link">← Voltar ao Site</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('errorMessage');
+        const loginButton = document.getElementById('loginButton');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            errorMessage.classList.remove('show');
+            loginButton.disabled = true;
+            loginButton.textContent = 'Verificando...';
+
+            // Simula delay de rede
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            if (Auth.login(username, password)) {
+                loginButton.textContent = 'Sucesso!';
+                
+                // Verifica se é admin
+                if (Auth.isAdmin()) {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'protected.html';
+                }
+            } else {
+                errorMessage.classList.add('show');
+                loginButton.disabled = false;
+                loginButton.textContent = 'Entrar';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        });
+
+        // Remove mensagem de erro ao digitar
+        usernameInput.addEventListener('input', () => {
+            errorMessage.classList.remove('show');
+        });
+
+        passwordInput.addEventListener('input', () => {
+            errorMessage.classList.remove('show');
+        });
+    </script>
+</body>
+</html>

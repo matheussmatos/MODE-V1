@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Sketch</title>
+    <link rel="icon" type="image/x-icon" href="img/home-mode.png">
+    <meta name="description" content="MODE SKETCH - Todos os modos de arte">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading -->
+    <div class="loading-screen" id="loading">
+        <div class="loading-container">
+            <img src="img/home-mode.gif" alt="Mode Loading" class="loading-gif">
+        </div>
+    </div>
+
+    <!-- Overlay para fechar menu mobile -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Particulas Container -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Background  -->
+    <div class="scanline"></div>
+    <div class="red-glow"></div>
+    <div class="mouse-gradient" id="mouseGradient"></div>
+
+    <!-- Navegação -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">MODE</div>
+            <div class="nav-right">
+                <!-- Menu Desktop -->
+                <div class="nav-links" id="navLinks">
+                    <a href="#home">Início</a>
+                    <a href="#about">Sobre</a>
+                    <a href="#gallery">Galeria</a>
+                    <a href="#contact">Contato</a>
+                </div>
+                <!-- Menu Hambúrguer -->
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <a href="login.html" class="login-button" title="Área Restrita">?</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 data-aos data-text="TODOS OS MODOS DE ARTE">TODOS OS<br>MODOS DE<br>ARTE</h1>
+            <p data-aos>Um coletivo de criações que fogem de rótulos</p>
+            <a href="#gallery" class="cta-button" data-aos>Explorar</a>
+        </div>
+    </section>
+
+    <!-- Sobre -->
+    <section class="about" id="about">
+        <h2 class="section-title" data-aos>Sobre a Mode</h2>
+        <div class="about-grid">
+            <div class="about-text" data-aos>
+                <p>A Mode nasceu em 2021 com o único e principal objetivo de compartilhar arte, em todas as suas formas.</p>
+                <p>Nossa galeria é um misto de categorias que exploram as mais diversas áreas da arte humana, mostrando que tudo o que possa ser imaginado, de um certo ponto de vista pode ser arte.</p>
+                <p>Cada tattoo, camiseta, desenho ou qualquer outra forma em nossa coleção foi cuidadosamente pensada, expressada por seu poder de provocar reflexão, emoção, questionamento ou apenas por ser arte.</p>
+            </div>
+            <div class="gif-container" data-aos>
+                <img src="img/home-mode.gif" alt="Mode Animation">
+            </div>
+        </div>
+    </section>
+
+    <!-- Galeria -->
+    <section class="gallery" id="gallery">
+        <h2 class="section-title" data-aos>Nossa Coleção</h2>
+        <div class="gallery-grid">
+            <div class="gallery-item" data-aos>
+                <img src="img/matos.jpg" alt="Matos Goth">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2021</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/mode-shirt.gif" alt="Mode Shirt">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2021</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/gun.jpg" alt="Gun">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2024</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/tattoo-skull.jpeg" alt="Tattoo Skull">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2024</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/pergaminho.jpg" alt="Naruto pergaminho">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2022</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/mode-ruas.gif" alt="Mode Ruas">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2021</p>
+                </div>
+            </div>
+            <div class="gallery-item" data-aos>
+                <img src="img/naruto.jpg" alt="Naruto">
+                <div class="gallery-info">
+                    <p>MODE SKETCH 2021</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contato -->
+    <section class="contact" id="contact">
+        <h2 class="section-title" data-aos>Entre em Contato</h2>
+        <div class="contact-container">
+            <form class="contact-form" id="contactForm" data-aos>
+                <div class="form-group">
+                    <input type="text" placeholder="Nome Completo" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" placeholder="E-mail" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" placeholder="Telefone">
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="Mensagem" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Enviar Mensagem</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="logo">MODE</div>
+        <p>Seu modo de ver a arte</p>
+        <div class="social-links">
+            <a href="https://www.instagram.com/mode.tattoo" target="_blank">Instagram</a>
+            <a href="https://www.tiktok.com/luvadepedreiro" target="_blank">TikTok</a>
+            <a href="https://www.youtube.com/watch?v=KxPfFmI-qYg" target="_blank">YouTube</a>
+        </div>
+        <p>&copy; 2021 Mode. Todos os direitos reservados.</p>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-icon">✓</div>
+            <h2>Mensagem Enviada</h2>
+            <p>Obrigado por entrar em contato com a Mode.</p>
+            <br>
+            Um dia a gente responde...
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

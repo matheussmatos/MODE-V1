@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Restrita | Mode</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/x-icon" href="img/home-mode.png">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        .protected-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .protected-logo {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 80px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .protected-title {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .protected-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .protected-user-info {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-detail {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        .user-detail strong {
+            color: #fff;
+            margin-right: 10px;
+        }
+
+        .protected-actions {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .protected-button {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-family: 'Abril Fatface', serif;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .protected-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .protected-button:hover::before {
+            left: 0;
+        }
+
+        .protected-button:hover {
+            color: #000;
+        }
+
+        .protected-button.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .protected-button.danger::before {
+            background: #ff4444;
+        }
+
+        .protected-button.danger:hover {
+            color: #fff;
+        }
+
+        .protected-content {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 40px auto;
+            backdrop-filter: blur(10px);
+            width: 100%;
+        }
+
+        .protected-content h3 {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* CHAT STYLES */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .online-count {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .chat-status {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .status-connected {
+            color: #4ade80;
+        }
+
+        .status-disconnected {
+            color: #ff4444;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 10px;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-username {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .admin-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            border-radius: 3px;
+            color: #ff6b6b;
+            letter-spacing: 1px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: auto;
+        }
+
+        .message-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .empty-chat {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            padding: 40px 20px;
+            letter-spacing: 2px;
+        }
+
+        .chat-input-container {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .send-button {
+            padding: 12px 25px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .send-button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .protected-logo {
+                font-size: 56px;
+            }
+
+            .protected-title {
+                font-size: 24px;
+            }
+
+            .protected-content {
+                padding: 30px 20px;
+            }
+
+            .chat-container {
+                height: 400px;
+            }
+
+            .protected-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .protected-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particulas -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Background Effects -->
+    <div class="scanline"></div>
+    <div class="red-glow"></div>
+    <div class="mouse-gradient" id="mouseGradient"></div>
+
+    <!-- Protected Container -->
+    <div class="protected-container">
+        <div class="protected-logo">MODE</div>
+        <h1 class="protected-title">Área Restrita</h1>
+        <p class="protected-subtitle">Bem-vindo(a) a área exclusiva de membros da Mode. <bl> Aqui você terá acesso a conteúdos em primeira mão e atividades variadas (Novidades em breve)</p>
+
+        <!-- User Info -->
+        <div class="protected-user-info" id="userInfoBox">
+            <!-- Preenchido via JavaScript -->
+        </div>
+
+        <!-- Actions -->
+        <div class="protected-actions">
+            <a href="admin.html" class="protected-button" id="adminLink" style="display: none;">
+                Painel Admin
+            </a>
+            <a href="index.html" class="protected-button">
+                Voltar ao Site
+            </a>
+            <button onclick="Auth.logout()" class="protected-button danger">
+                Sair
+            </button>
+        </div>
+
+        <!-- Chat ao Vivo -->
+        <div class="protected-content">
+            <h3>💬 Chat ao Vivo</h3>
+            
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <span class="online-count" id="onlineCount">0</span> online
+                    </div>
+                    <div class="chat-status" id="chatStatus">
+                        Conectando...
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="empty-chat">
+                        Carregando mensagens...
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="chat-input-container">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="Digite sua mensagem..."
+                        rows="1"
+                        maxlength="500"></textarea>
+                    <button id="sendBtn" class="send-button">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, set, onDisconnect, serverTimestamp, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // ========================================
+        // CONFIGURAÇÃO DO FIREBASE
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3p1xzpXLPOJyn8YUUvNWj8un11H6xXc4",
+            authDomain: "mode-sketch.firebaseapp.com",
+            databaseURL: "https://mode-sketch-default-rtdb.firebaseio.com",
+            projectId: "mode-sketch",
+            storageBucket: "mode-sketch.firebasestorage.app",
+            messagingSenderId: "713181837286",
+            appId: "1:713181837286:web:c1d1afddbef64219e94827"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // ========================================
+        // SISTEMA DE CHAT COM FIREBASE REALTIME
+        // ========================================
+        class ChatSystem {
+            constructor() {
+                this.messagesContainer = document.getElementById('chatMessages');
+                this.input = document.getElementById('chatInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.onlineCountEl = document.getElementById('onlineCount');
+                this.statusEl = document.getElementById('chatStatus');
+                
+                this.messagesRef = ref(database, 'chat/messages');
+                this.presenceRef = ref(database, 'chat/presence');
+                this.currentUser = Auth.getCurrentUser();
+                this.userPresenceRef = null;
+                this.isConnected = false;
+                
+                this.init();
+            }
+
+            init() {
+                if (!this.currentUser) {
+                    console.error('Usuário não autenticado');
+                    this.statusEl.textContent = 'Erro: Não autenticado';
+                    this.statusEl.classList.add('status-disconnected');
+                    return;
+                }
+
+                this.setupPresence();
+                this.loadMessages();
+                this.setupEventListeners();
+                this.setupConnectionStatus();
+            }
+
+            setupConnectionStatus() {
+                const connectedRef = ref(database, '.info/connected');
+                onValue(connectedRef, (snapshot) => {
+                    this.isConnected = snapshot.val() === true;
+                    
+                    if (this.isConnected) {
+                        this.statusEl.textContent = 'Conectado';
+                        this.statusEl.classList.remove('status-disconnected');
+                        this.statusEl.classList.add('status-connected');
+                        this.sendBtn.disabled = false;
+                    } else {
+                        this.statusEl.textContent = 'Desconectado';
+                        this.statusEl.classList.remove('status-connected');
+                        this.statusEl.classList.add('status-disconnected');
+                        this.sendBtn.disabled = true;
+                    }
+                });
+            }
+
+            setupPresence() {
+                const presenceId = `${this.currentUser.username}_${Date.now()}`;
+                this.userPresenceRef = ref(database, `chat/presence/${presenceId}`);
+                
+                const presenceData = {
+                    username: this.currentUser.username,
+                    isAdmin: this.currentUser.isAdmin,
+                    online: true,
+                    lastSeen: serverTimestamp(),
+                    connectedAt: serverTimestamp()
+                };
+
+                set(this.userPresenceRef, presenceData);
+                onDisconnect(this.userPresenceRef).remove();
+
+                onValue(this.presenceRef, (snapshot) => {
+                    const presence = snapshot.val();
+                    if (presence) {
+                        const uniqueUsers = new Set();
+                        Object.values(presence).forEach(user => {
+                            if (user.online) {
+                                uniqueUsers.add(user.username);
+                            }
+                        });
+                        this.onlineCountEl.textContent = uniqueUsers.size;
+                    } else {
+                        this.onlineCountEl.textContent = 0;
+                    }
+                });
+
+                this.presenceInterval = setInterval(() => {
+                    if (this.isConnected) {
+                        set(this.userPresenceRef, presenceData);
+                    }
+                }, 30000);
+            }
+
+            setupEventListeners() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                this.input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                this.input.addEventListener('input', () => {
+                    this.input.style.height = 'auto';
+                    this.input.style.height = Math.min(this.input.scrollHeight, 100) + 'px';
+                });
+            }
+
+            sendMessage() {
+                const text = this.input.value.trim();
+                if (!text || !this.isConnected) return;
+
+                const message = {
+                    username: this.currentUser.username,
+                    isAdmin: this.currentUser.isAdmin,
+                    text: text,
+                    timestamp: serverTimestamp()
+                };
+
+                this.sendBtn.disabled = true;
+
+                push(this.messagesRef, message)
+                    .then(() => {
+                        this.input.value = '';
+                        this.input.style.height = 'auto';
+                        this.sendBtn.disabled = false;
+                        this.input.focus();
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao enviar mensagem:', error);
+                        alert('Erro ao enviar mensagem. Tente novamente.');
+                        this.sendBtn.disabled = false;
+                    });
+            }
+
+            loadMessages() {
+                const messagesQuery = query(
+                    this.messagesRef,
+                    orderByChild('timestamp'),
+                    limitToLast(100)
+                );
+
+                onValue(messagesQuery, (snapshot) => {
+                    const messages = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const msg = childSnapshot.val();
+                        if (msg.timestamp) {
+                            messages.push(msg);
+                        }
+                    });
+
+                    this.renderMessages(messages);
+                }, (error) => {
+                    console.error('Erro ao carregar mensagens:', error);
+                    this.messagesContainer.innerHTML = `
+                        <div class="empty-chat" style="color: #ff4444;">
+                            Erro ao carregar mensagens. Verifique sua conexão.
+                        </div>
+                    `;
+                });
+            }
+
+            renderMessages(messages) {
+                if (messages.length === 0) {
+                    this.messagesContainer.innerHTML = `
+                        <div class="empty-chat">
+                            💬 Nenhuma mensagem ainda. Seja o primeiro a enviar!
+                        </div>
+                    `;
+                    return;
+                }
+
+                const shouldScroll = this.messagesContainer.scrollHeight - this.messagesContainer.scrollTop <= this.messagesContainer.clientHeight + 100;
+
+                this.messagesContainer.innerHTML = messages.map(msg => {
+                    const date = new Date(msg.timestamp);
+                    const time = date.toLocaleTimeString('pt-BR', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    const initial = msg.username.charAt(0).toUpperCase();
+                    
+                    return `
+                        <div class="chat-message">
+                            <div class="message-avatar">${initial}</div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <span class="message-username">${this.escapeHtml(msg.username)}</span>
+                                    ${msg.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-text">${this.escapeHtml(msg.text)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (shouldScroll) {
+                    setTimeout(() => {
+                        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                    }, 100);
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            destroy() {
+                if (this.presenceInterval) {
+                    clearInterval(this.presenceInterval);
+                }
+                if (this.userPresenceRef) {
+                    remove(this.userPresenceRef);
+                }
+            }
+        }
+
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        
+        Auth.requireAuth();
+
+        function updateUserInfo() {
+            const user = Auth.getCurrentUser();
+            const userInfoBox = document.getElementById('userInfoBox');
+            const adminLink = document.getElementById('adminLink');
+
+            const loginDate = new Date(user.loginTime);
+            const formattedDate = loginDate.toLocaleString('pt-BR');
+
+            userInfoBox.innerHTML = `
+                <div class="user-detail">
+                    <strong>Usuário:</strong> ${user.username}
+                </div>
+                <div class="user-detail">
+                    <strong>Tipo:</strong> ${user.isAdmin ? 'Administrador' : 'Usuário'}
+                </div>
+                <div class="user-detail">
+                    <strong>Login em:</strong> ${formattedDate}
+                </div>
+            `;
+
+            if (user.isAdmin) {
+                adminLink.style.display = 'inline-block';
+            }
+        }
+
+        updateUserInfo();
+        const chat = new ChatSystem();
+
+        window.addEventListener('beforeunload', () => {
+            chat.destroy();
+        });
+
+        console.log('🔥 Firebase Chat inicializado');
+        console.log('👤 Usuário:', chat.currentUser.username);
+    </script>
+</body>
+</html>
